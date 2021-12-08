@@ -42,6 +42,7 @@
 %type <expression> expression-list
 
 %%
+
 library : statement                              { ctx.setRootExpression(move($1)); }
 statement : OPEN_BRACE expression-list END_BRACE { $$ = move($2); }
           ;
@@ -86,19 +87,15 @@ void yy::meta_parser::error(const location_type& l, const std::string& m)
     std::cerr << ':' << l.begin.line << ':' << l.begin.column << '-' << l.end.column << ": " << m << '\n'; 
 }
 
-#include <fstream>
-int main(int argc, char** argv)
-{
-    std::string filename = argv[1];
-    std::ifstream f(filename);
-    std::string buffer(std::istreambuf_iterator<char>(f), {});
-    std::cout << "Input text: " << buffer << std::endl;
-    lexcontext ctx;
-    ctx.cursor = buffer.c_str();
-    ctx.loc.begin.filename = &filename;
-    ctx.loc.end.filename   = &filename;
+namespace Parser {
+    expression parse(const std::string& buffer,const std::string& filename) {
+        lexcontext ctx;
+        ctx.cursor = buffer.c_str();
+        ctx.loc.begin.filename = &filename;
+        ctx.loc.end.filename   = &filename;
 
-    yy::meta_parser parser(ctx);
-    parser.parse();
-    ctx.rootExpression.print();
+        yy::meta_parser parser(ctx);
+        parser.parse();
+        return ctx.rootExpression;
+    }
 }

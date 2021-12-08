@@ -13,6 +13,11 @@ enum class ex_type { ENUM_EXPRESSIONS(o) };
 #undef o
 
 using expression_vec = std::list<struct expression>;
+
+namespace Parser {
+    expression parse(const std::string& buffer,const std::string& filename);
+};
+
 struct expression {
     
     ex_type type = ex_type::statement;
@@ -25,14 +30,21 @@ struct expression {
 
     void push_back(expression&& other) { exprs.push_back(std::move(other)); }
 
-    void print(int depth = 0) const
-    {
-        if(type == ex_type::identifier) {
-            std::cout << std::string(depth,' ') << strvalue << std::endl;
-            return;
-        }
-        for(const auto& l : exprs) {
-            l.print(depth + 1);
+    void write(std::ostream& out) const {
+        if(type == ex_type::identifier) out << strvalue << " ";
+        else{
+            out << "( ";
+            for(const auto& child : exprs) child.write(out);
+            out << ") ";
         }
     }
+
+    void read(const std::string& str,const std::string& filename) {
+        *this = Parser::parse(str,filename);
+    }
 };
+
+inline std::ostream& operator<<(std::ostream&os,const expression& expr) {
+    expr.write(os);
+    return os;
+}
