@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 #include <pstreams/pstream.h>
+#include <map>
 #include "expression.h"
 
 using namespace std;
@@ -33,6 +34,8 @@ struct UserDefinedRules {
         for(const string& arg : arguments) {
             result.replace(arg,expr.at(i++));
         }
+
+        result.write(std::cerr);
         return result;
     }
 };
@@ -40,6 +43,7 @@ namespace Interpreter {
 
     std::vector<MatchRule> rules;
     std::vector<UserDefinedRules> userRules;
+    std::map<std::string,expression> savedExpressions;
 
     const std::string& safeBuffer(std::string& input) {
         if(input[0] != '(' || input[input.size() - 1] != ')') input = '(' + input + ')';
@@ -54,8 +58,9 @@ namespace Interpreter {
 
         for (size_t i = 0; i < userRules.size(); i++) {
             if(userRules[i].match(expr)) {
-                expr = userRules[i].expandRule(expr);
-                execute(expr);
+                expression result = userRules[i].expandRule(expr);
+                execute(result);
+                expr = result;
             }
         }
         for(auto& child : expr) {
@@ -86,6 +91,7 @@ namespace Interpreter {
         });
 
         rules.emplace_back(2,"exec",[](expression& expr){
+            Interpreter::execute(expr.at(1));
             std::string command = expr.at(1).flat();
             redi::ipstream proc(command, redi::pstreams::pstdout | redi::pstreams::pstderr);
             std::string line;
@@ -106,6 +112,16 @@ namespace Interpreter {
             expression result = expr.at(1);
             Interpreter::execute(result);
             return expression::fromString("(" + result.flat() + ")");
+        });
+
+        rules.emplace_back(3,"set",[&](expression& expr){
+            execute(expr.at(2));
+            savedExpressions[expr.at(1).strvalue] = expr.at(2);
+            return expression();
+        });
+
+        rules.emplace_back(2,"get",[&](expression& expr){
+            return savedExpressions[expr.at(1).strvalue];
         });
     }
 };

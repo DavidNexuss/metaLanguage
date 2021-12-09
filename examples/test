@@ -1,4 +1,4 @@
 (
-    (define minclude X (exec (cat X)))
-    (minclude test2)
+    (set archivo (include test2))
+    (get archivo)
 )
