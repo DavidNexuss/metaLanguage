@@ -1,1 +1,4 @@
-( (include test2) (include test2) ) 
+( (for (kd ks ka) X 
+(uniform X)
+
+))

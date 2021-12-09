@@ -43,10 +43,17 @@ namespace Interpreter {
             return expression::fromString(safeBuffer(buffer));
         });
 
-        rules.emplace_back(3,"for",[](expression& expr){
+        rules.emplace_back(4,"for",[](expression& expr){
             expression& args = expr.at(1);
             Interpreter::execute(args);
             expression result;
+            std::string pattern = expr.at(2).strvalue;
+
+            for(auto& child : expr.at(1)) {
+                expression newStatement = expr.at(3);
+                newStatement.replace(pattern,child);
+                result.push_back(newStatement);
+            }
             return result;
         });
     }
