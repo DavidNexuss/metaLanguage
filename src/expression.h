@@ -57,6 +57,15 @@ struct expression : public expression_vec {
         if(type == ex_type::identifier && strvalue == literal) *this = expr;
         for(auto& child : *this) child.replace(literal, expr);
     }
+
+    std::string flat() {
+        std::string result;
+        if(type == ex_type::identifier) result = strvalue;
+        else {
+            for (auto& child : *this) result += child.flat() + " ";
+        }
+        return result;
+    }
 };
 
 inline std::ostream& operator<<(std::ostream&os,const expression& expr) {

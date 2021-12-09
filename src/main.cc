@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <functional>
+#include <pstreams/pstream.h>
 #include "expression.h"
 
 
@@ -55,6 +56,17 @@ namespace Interpreter {
                 result.push_back(newStatement);
             }
             return result;
+        });
+
+        rules.emplace_back(2,"exec",[](expression& expr){
+            std::string command = expr.at(1).flat();
+            redi::ipstream proc(command, redi::pstreams::pstdout | redi::pstreams::pstderr);
+            std::string line;
+            std::string buffer;
+            while(getline(proc,line)) {
+                buffer += line;
+            }
+            return expression::fromString("(" + buffer + ")");
         });
     }
 };

@@ -1,4 +1,1 @@
-( (for (kd ks ka) X 
-(uniform X)
-
-))
+(exec (cat test2))
