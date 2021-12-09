@@ -5,7 +5,7 @@
 #include <pstreams/pstream.h>
 #include "expression.h"
 
-
+using namespace std;
 struct MatchRule {
     size_t fields;
     std::string name;
@@ -16,9 +16,30 @@ struct MatchRule {
         return expr.size() == fields && expr.front().type == ex_type::identifier && expr.front().strvalue == name;
     }
 };
+
+struct UserDefinedRules {
+    std::string name;
+    std::vector<std::string> arguments;
+    expression templateExpression;
+
+    bool match(const expression& expr) {
+        return expr.size() == (arguments.size() + 1) && expr.front().type == ex_type::identifier && expr.front().strvalue == name;
+    }
+
+    expression expandRule(expression& expr) {
+
+        expression result = templateExpression;
+        size_t i = 1;
+        for(const string& arg : arguments) {
+            result.replace(arg,expr.at(i++));
+        }
+        return result;
+    }
+};
 namespace Interpreter {
 
     std::vector<MatchRule> rules;
+    std::vector<UserDefinedRules> userRules;
 
     const std::string& safeBuffer(std::string& input) {
         if(input[0] != '(' || input[input.size() - 1] != ')') input = '(' + input + ')';
@@ -31,6 +52,12 @@ namespace Interpreter {
             if(rules[i].match(expr)) expr = rules[i].expandRule(expr);   
         }
 
+        for (size_t i = 0; i < userRules.size(); i++) {
+            if(userRules[i].match(expr)) {
+                expr = userRules[i].expandRule(expr);
+                execute(expr);
+            }
+        }
         for(auto& child : expr) {
             execute(child);
         }
@@ -68,6 +95,18 @@ namespace Interpreter {
             }
             return expression::fromString("(" + buffer + ")");
         });
+
+        rules.emplace_back(4,"define",[&](expression& expr){
+            std::string commandName = expr.at(1).strvalue;
+            userRules.emplace_back(commandName,expr.at(2).flatVector(),expr.at(3));
+            return expression();
+        });
+
+        rules.emplace_back(2,"flat",[&](expression& expr){
+            expression result = expr.at(1);
+            Interpreter::execute(result);
+            return expression::fromString("(" + result.flat() + ")");
+        });
     }
 };
 int main(int argc, char** argv)
@@ -78,5 +117,5 @@ int main(int argc, char** argv)
     expression rootExpr = expression::fromString(buffer,filename);
     Interpreter::initialize();
     Interpreter::execute(rootExpr);
-    rootExpr.write(std::cout);
+    std::cout << rootExpr.prettyFlat() << std::endl;
 }

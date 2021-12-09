@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <iterator>
+#include <vector>
 
 #define ENUM_EXPRESSIONS(o) \
     o(identifier) \
@@ -63,6 +64,28 @@ struct expression : public expression_vec {
         if(type == ex_type::identifier) result = strvalue;
         else {
             for (auto& child : *this) result += child.flat() + " ";
+        }
+        return result;
+    }
+
+    void flatV(std::vector<std::string>& strv) {
+        if(type == ex_type::identifier) strv.push_back(strvalue);
+        else{
+            for (auto& child : *this) child.flatV(strv);
+        }
+    }
+
+    std::vector<std::string> flatVector() {
+        std::vector<std::string> result;
+        flatV(result);
+        return result;
+    }
+
+    std::string prettyFlat() {
+        std::string result;
+        if(type == ex_type::identifier) result = strvalue;
+        else {
+            for (auto& child : *this) result += child.flat() + "\n";
         }
         return result;
     }

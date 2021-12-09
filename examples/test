@@ -1,1 +1,4 @@
-(exec (cat test2))
+(
+    (define minclude X (exec (cat X)))
+    (minclude test2)
+)
