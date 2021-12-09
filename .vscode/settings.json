@@ -50,6 +50,10 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "*.ipp": "cpp",
+        "bitset": "cpp",
+        "valarray": "cpp",
+        "*.inc": "cpp"
     }
 }

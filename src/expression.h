@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <string>
+#include <iterator>
 
 #define ENUM_EXPRESSIONS(o) \
     o(identifier) \
@@ -18,29 +19,43 @@ namespace Parser {
     expression parse(const std::string& buffer,const std::string& filename);
 };
 
-struct expression {
+struct expression : public expression_vec {
     
     ex_type type = ex_type::statement;
-    expression_vec exprs;
-
     std::string strvalue{};
 
     expression() { }
     expression(std::string&& str) : type(ex_type::identifier), strvalue(std::move(str)) { }
 
-    void push_back(expression&& other) { exprs.push_back(std::move(other)); }
-
     void write(std::ostream& out) const {
         if(type == ex_type::identifier) out << strvalue << " ";
         else{
             out << "( ";
-            for(const auto& child : exprs) child.write(out);
+            for(const auto& child : *this) child.write(out);
             out << ") ";
         }
     }
 
     void read(const std::string& str,const std::string& filename) {
         *this = Parser::parse(str,filename);
+    }
+
+    static expression fromString(const std::string& str,const std::string& filename = "internal") { 
+        std::cerr << "Input text: " << str << std::endl;
+        return Parser::parse(str,filename); 
+    }
+
+    expression& at(size_t index) {
+        auto it = begin();
+        for (size_t i = 0; i < index; i++) {
+            ++it;
+        }
+        return *(it);
+    }
+    
+    void replace(const std::string& literal,const expression& expr){
+        if(type == ex_type::identifier && strvalue == literal) *this = expr;
+        for(auto& child : *this) child.replace(literal, expr);
     }
 };
 
