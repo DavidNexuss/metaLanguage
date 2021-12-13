@@ -147,6 +147,14 @@ namespace Interpreter {
             if(expr.at(2).exists(expr.at(1).strvalue)) return expression("true");
             return expression("false");
         });
+
+        rules.emplace_back(3,"at",[&](expression& expr){
+            execute(expr.at(1));
+            int index = std::stoi(expr.at(1).strvalue);
+            return expr.at(2).at(index);
+        });
+
+        rules.emplace_back(2,"size",[&](expression& expr){ return expression(to_string(expr.at(1).size())); });
     }
 };
 int main(int argc, char** argv)
