@@ -73,20 +73,22 @@ namespace Interpreter {
     }
 
     void initialize() {
+        // include X
         rules.emplace_back(2,"include",[](expression& expr){
             std::string filename = (++expr.begin())->strvalue;
             std::ifstream f(filename);
             std::string buffer(std::istreambuf_iterator<char>(f), {});
             return expression::fromString(safeBuffer(buffer));
         });
-
+        
+        //for X L Expr
         rules.emplace_back(4,"for",[](expression& expr){
-            expression& args = expr.at(1);
+            expression& args = expr.at(2);
             Interpreter::execute(args);
             expression result;
-            std::string pattern = expr.at(2).strvalue;
+            std::string pattern = expr.at(1).strvalue;
 
-            for(auto& child : expr.at(1)) {
+            for(auto& child : expr.at(2)) {
                 expression newStatement = expr.at(3);
                 newStatement.replace(pattern,child);
                 result.push_back(newStatement);
@@ -145,10 +147,6 @@ namespace Interpreter {
             if(expr.at(2).exists(expr.at(1).strvalue)) return expression("true");
             return expression("false");
         });
-        /*
-        rules.emplace_back(3,"activate",[&](expression& expr){
-            
-        }); */
     }
 };
 int main(int argc, char** argv)
