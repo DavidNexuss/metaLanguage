@@ -53,7 +53,9 @@ namespace Interpreter {
     void execute(expression& expr) {
 
         for (size_t i = 0; i < rules.size(); i++) {
-            if(rules[i].match(expr)) expr = rules[i].expandRule(expr);   
+            if(rules[i].match(expr)) { 
+                expr = rules[i].expandRule(expr);   
+            }
         }
 
         for (size_t i = 0; i < userRules.size(); i++) {
@@ -123,6 +125,28 @@ namespace Interpreter {
         rules.emplace_back(2,"get",[&](expression& expr){
             return savedExpressions[expr.at(1).strvalue];
         });
+
+
+        rules.emplace_back(3,"if",[&](expression& expr){
+            execute(expr.at(1));
+            if(expr.at(1).strvalue == "true") { 
+                return expr.at(2);
+            }
+            return expression();
+        });
+
+        rules.emplace_back(3,"exists",[&](expression& expr){
+
+            execute(expr.at(1));
+            execute(expr.at(2));
+
+            if(expr.at(2).exists(expr.at(1).strvalue)) return expression("true");
+            return expression("false");
+        });
+        /*
+        rules.emplace_back(3,"activate",[&](expression& expr){
+            
+        }); */
     }
 };
 int main(int argc, char** argv)

@@ -89,6 +89,15 @@ struct expression : public expression_vec {
         }
         return result;
     }
+
+    bool exists(const std::string& str) {
+        
+        if(type == ex_type::identifier) return strvalue == str;
+        for(auto& child : *this) {
+            if(child.exists(str)) return true;
+        }
+        return false;
+    }
 };
 
 inline std::ostream& operator<<(std::ostream&os,const expression& expr) {
