@@ -78,6 +78,7 @@ yy::meta_parser::symbol_type yy::yylex(lexcontext& ctx)
 
 
         [a-zA-Z_] [a-zA-Z_0-9]*  { return s(meta_parser::make_IDENTIFIER,std::string(anchor,ctx.cursor)); } 
+        [0-9]+                   { return s(meta_parser::make_IDENTIFIER,std::string(anchor,ctx.cursor)); }
     %}
 }
 
