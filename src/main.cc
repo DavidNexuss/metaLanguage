@@ -68,6 +68,8 @@ namespace Interpreter {
         for(auto& child : expr) {
             execute(child);
         }
+
+        if(expr.size() == 1) expr = expr.at(0);
     }
 
     void initialize() {
