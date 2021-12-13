@@ -69,7 +69,10 @@ namespace Interpreter {
             execute(child);
         }
 
-        if(expr.size() == 1) expr = expr.at(0);
+        if(expr.size() == 1){
+            expression result = expr.at(0);
+            expr = result;
+        }
     }
 
     void initialize() {
@@ -78,7 +81,12 @@ namespace Interpreter {
             std::string filename = (++expr.begin())->strvalue;
             std::ifstream f(filename);
             std::string buffer(std::istreambuf_iterator<char>(f), {});
-            return expression::fromString(safeBuffer(buffer));
+            return expression(std::move(buffer));
+        });
+
+        rules.emplace_back(2,"load",[](expression& expr){
+            execute(expr.at(1));
+            return expression::fromString(expr.at(1).strvalue);
         });
         
         //for X L Expr
@@ -105,7 +113,7 @@ namespace Interpreter {
             while(getline(proc,line)) {
                 buffer += line;
             }
-            return expression::fromString("(" + buffer + ")");
+            return buffer;
         });
 
         rules.emplace_back(4,"define",[&](expression& expr){

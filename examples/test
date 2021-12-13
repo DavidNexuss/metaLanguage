@@ -1,5 +1,3 @@
 (
-    (set texto (include test2))
-    (define activate (Archivo Variable Expression) (if (exists Variable (get Archivo)) Expression) ) 
-    (activate texto (METALLIC) (uniform mat4 metallic ))
+    (load (include test2) )
 )
