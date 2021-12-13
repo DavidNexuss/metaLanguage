@@ -131,6 +131,7 @@ namespace Interpreter {
         });
 
 
+        //TODO: Could be done using logic shortcut
         rules.emplace_back(3,"if",[&](expression& expr){
             execute(expr.at(1));
             if(expr.at(1).strvalue == "true") { 

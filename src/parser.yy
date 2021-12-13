@@ -34,6 +34,9 @@
 %token END 0
 %token OPEN_BRACE "("
 %token END_BRACE ")"
+
+%token OPEN_EXEC_BRACE "["
+%token END_EXEC_BRACE "]"
 %token IDENTIFIER
 
 %type <std::string> IDENTIFIER
@@ -43,15 +46,16 @@
 
 %%
 
-library : statement                              { ctx.setRootExpression(move($1)); }
-statement : OPEN_BRACE expression-list END_BRACE { $$ = move($2); }
+library : statement                                                     { ctx.setRootExpression(move($1)); }
+statement : OPEN_BRACE expression-list END_BRACE                        { $$ = move($2); }
+          | OPEN_EXEC_BRACE expression-list END_EXEC_BRACE              { $$ = expression(expression("exec"), move($2)); }
           ;
 
-expression-list : expression                     { $$ = expression(); $$.push_back(move($1)); } 
-expression-list : expression-list expression     { $$ = move($1); $$.push_back(move($2)); }
+expression-list : expression                                            { $$ = expression(); $$.push_back(move($1)); } 
+expression-list : expression-list expression                            { $$ = move($1); $$.push_back(move($2)); }
 
-expression: statement                            { $$ = move($1); } 
-          | IDENTIFIER                           { $$ = expression(move($1)); }
+expression: statement                                                   { $$ = move($1); } 
+          | IDENTIFIER                                                  { $$ = expression(move($1)); }
           ;
 
 %%
@@ -76,7 +80,9 @@ yy::meta_parser::symbol_type yy::yylex(lexcontext& ctx)
         "(" { return s(meta_parser::make_OPEN_BRACE); } 
         ")" { return s(meta_parser::make_END_BRACE); }
 
-
+        "[" { return s(meta_parser::make_OPEN_EXEC_BRACE); }
+        "]" { return s(meta_parser::make_END_EXEC_BRACE); }
+    
         [a-zA-Z_] [a-zA-Z_0-9]*  { return s(meta_parser::make_IDENTIFIER,std::string(anchor,ctx.cursor)); } 
         [0-9]+                   { return s(meta_parser::make_IDENTIFIER,std::string(anchor,ctx.cursor)); }
     %}

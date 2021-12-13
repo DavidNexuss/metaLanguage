@@ -25,8 +25,15 @@ struct expression : public expression_vec {
     ex_type type = ex_type::statement;
     std::string strvalue{};
 
+
     expression() { }
     expression(std::string&& str) : type(ex_type::identifier), strvalue(std::move(str)) { }
+
+    /* TODO: Should work but...
+    template <typename... Args>
+    expression(Args&&... args) : expression_vec{std::forward<expression>(args)...} { }*/
+
+    expression(expression&& a,expression&& b) { push_back(std::move(a)); push_back(std::move(b)); }
 
     void write(std::ostream& out) const {
         if(type == ex_type::identifier) out << strvalue << " ";
