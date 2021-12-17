@@ -51,7 +51,8 @@ namespace Interpreter {
     }
 
     void execute(expression& expr) {
-
+        
+        if(expr.executeEllision) return;
         for (size_t i = 0; i < rules.size(); i++) {
             if(rules[i].match(expr)) { 
                 expr = rules[i].expandRule(expr);   
@@ -164,6 +165,8 @@ namespace Interpreter {
         });
 
         rules.emplace_back(2,"size",[&](expression& expr){ return expression(to_string(expr.at(1).size())); });
+
+        rules.emplace_back(2,"quote",[&](expression& expr){ expr.at(1).executeEllision = false; return expr.at(1); });
     }
 };
 int main(int argc, char** argv)
